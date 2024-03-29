@@ -1,25 +1,19 @@
-# GoVultr
+# GoCryptfire
 
-[![Automatic Releaser](https://github.com/vultr/govultr/actions/workflows/releaser.yml/badge.svg)](https://github.com/vultr/govultr/actions/workflows/releaser.yml)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/vultr/govultr/v3)](https://pkg.go.dev/github.com/vultr/govultr/v3)
-[![Unit/Coverage Tests](https://github.com/vultr/govultr/actions/workflows/coverage.yml/badge.svg)](https://github.com/vultr/govultr/actions/workflows/coverage.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/vultr/govultr)](https://goreportcard.com/report/github.com/vultr/govultr)
-
-The official Vultr Go client - GoVultr allows you to interact with the Vultr V2 API.
+The official Cryptfire Go client - GoCryptfire allows you to interact with the Cryptfire V1 API.
 
 ## Installation
 
 ```sh
-go get -u github.com/vultr/govultr/v3
+go get -u github.com/cryptfire/gocryptfire/v1
 ```
 
 ## Usage
+Cryptfire uses a personal access token (PAT) to interact/authenticate with the
+APIs. Generate an API Key from the [API menu](https://early.cryptfire/settings) 
+in the Cryptfire Customer Portal.
 
-Vultr uses a personal access token (PAT) to interact/authenticate with the
-APIs. Generate an API Key from the [API menu](https://my.vultr.com/settings/#settingsapi) 
-in the Vultr Customer Portal.
-
-To instantiate a GoVultr client, invoke `NewClient()`. Most operations require
+To instantiate a GoCryptfire client, invoke `NewClient()`. Most operations require
 that you pass a PAT to an `oauth2` library to create the `*http.Client`, which
 configures the `Authorization` header with your PAT as the `bearer api-key`. If 
 a PAT is not provided, public operations like listing plans or applications
@@ -27,9 +21,9 @@ will still work.
 
 The client has three optional parameters:
 
-- BaseUrl: Change the Vultr default base URL
-- UserAgent: Change the Vultr default UserAgent
-- RateLimit: Set a delay between calls. Vultr limits the rate of back-to-back calls. Use this parameter to avoid rate-limit errors.
+- BaseUrl: Change the Cryptfire default base URL
+- UserAgent: Change the Cryptfire default UserAgent
+- RateLimit: Set a delay between calls. Cryptfire limits the rate of back-to-back calls. Use this parameter to avoid rate-limit errors.
 
 ### Example Client Setup
 
@@ -40,22 +34,22 @@ import (
   "context"
   "os"
 
-  "github.com/vultr/govultr/v3"
+  "github.com/cryptfire/gocryptfire/v1"
   "golang.org/x/oauth2"
 )
 
 func main() {
-  apiKey := os.Getenv("VultrAPIKey")
+  apiKey := os.Getenv("CryptfireAPIKey")
 
   config := &oauth2.Config{}
   ctx := context.Background()
   ts := config.TokenSource(ctx, &oauth2.Token{AccessToken: apiKey})
-  vultrClient := govultr.NewClient(oauth2.NewClient(ctx, ts))
+  CryptfireClient := goCryptfire.NewClient(oauth2.NewClient(ctx, ts))
 
   // Optional changes
-  _ = vultrClient.SetBaseURL("https://api.vultr.com")
-  vultrClient.SetUserAgent("mycool-app")
-  vultrClient.SetRateLimit(500)
+  _ = CryptfireClient.SetBaseURL("https://api.cryptfire.io")
+  CryptfireClient.SetUserAgent("mycool-app")
+  CryptfireClient.SetRateLimit(500)
 }
 ```
 
@@ -65,29 +59,26 @@ authentication.
 ```go
   ... 
 
-  vultrClient := govultr.NewClient(nil)
+  CryptfireClient := gocryptfire.NewClient(nil)
   ctx := context.Background()
-  plans, _, _, err := vultrClient.Plan.List(ctx, "", nil)
+  plans, _, _, err := CryptfireClient.Plan.List(ctx, "", nil)
 
   ...
 ```
 
 ### Example Usage
 
-Create a VPS
+Create an Account
 
 ```go
-instanceOptions := &govultr.InstanceCreateReq{
-  Label:                "awesome-go-app",
-  Hostname:             "awesome-go.com",
-  Backups:              "enabled",
-  EnableIPv6:           BoolToBoolPtr(false),
-  OsID:                 362,
-  Plan:                 "vc2-1c-2gb",
-  Region:               "ewr",
+accountData := &goCryptfire.AccountCreateReq{
+  Email:                "foo@bar.com",
+  Phone:                "+19173734363",
+  Country:              "US"
+  UID:                  "noone"
 }
 
-res, err := vultrClient.Instance.Create(context.Background(), instanceOptions)
+res, err := CryptfireClient.Account.Create(context.Background(), accountData)
 
 if err != nil {
   fmt.Println(err)
@@ -96,7 +87,7 @@ if err != nil {
 
 ## Pagination
 
-GoVultr v2 introduces pagination for all list calls. Each list call returns a
+GoCryptfire v2 introduces pagination for all list calls. Each list call returns a
 `meta` struct containing the total amount of items in the list and
 next/previous links to navigate the paging.
 
@@ -122,7 +113,7 @@ This example demonstrates how to retrieve all of your instances, with one
 instance per page.
 
 ```go
-listOptions := &govultr.ListOptions{PerPage: 1}
+listOptions := &gocryptfire.ListOptions{PerPage: 1}
 for {
     i, meta, err := client.Instance.List(ctx, listOptions)
     if err != nil {
@@ -140,21 +131,6 @@ for {
     }
 }
 ```
-## Versioning
-
-This project follows [SemVer](http://semver.org/) for versioning. For the
-versions available, see the [tags on this
-repository](https://github.com/vultr/govultr/tags).
-
-## Documentation
-
-See our documentation for [detailed information about API v2](https://www.vultr.com/api/).
-
-See our [GoDoc](https://pkg.go.dev/github.com/vultr/govultr/v3) documentation for more details about this client's functionality.
-
-## Contributing
-
-Feel free to send pull requests our way! Please see the [contributing guidelines](CONTRIBUTING.md).
 
 ## License
 
